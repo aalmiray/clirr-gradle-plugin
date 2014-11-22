@@ -79,6 +79,15 @@ plugindev {
     done()
 }
 
+if (!project.hasProperty('bintrayUsername')) ext.bintrayUsername = ''
+if (!project.hasProperty('bintrayApiKey')) ext.bintrayApiKey = ''
+
+bintray {
+    user = project.bintrayUsername
+    key = project.bintrayApiKey
+    pkg.repo = 'kordamp'
+}
+
 import java.text.SimpleDateFormat
 
 Date buildTimeAndDate = new Date()
