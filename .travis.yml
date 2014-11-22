@@ -1,0 +1,4 @@
+language: java
+script: ./gradlew clean build
+jdk: oraclejdk7
+env: TERM=dumb

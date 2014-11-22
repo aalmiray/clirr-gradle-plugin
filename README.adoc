@@ -1,0 +1,160 @@
+Clirr Gradle Plugin
+===================
+:author: Andres Almiray
+:version: 0.1.0
+:url_clirr: http://clirr.sourceforge.net
+:project-name: clirr-gradle-plugin
+
+image:http://img.shields.io/travis/aalmiray/{project-name}/master.svg["Build Status", link="https://travis-ci.org/aalmiray/{project-name}"]
+image:http://img.shields.io/badge/license-ASF2-blue.svg["Apache License 2", link="http://www.apache.org/licenses/LICENSE-2.0.txt"]
+image:https://api.bintray.com/packages/aalmiray/kordamp/{project-name}/images/download.svg[link="https://bintray.com/aalmiray/kordamp/{project-name}/_latestVersion"]
+
+The {project-name} enables the usage of {url_clirr}[Clirr] to calculate the binary compatibility between 2 releases.
+
+This plugin is a fork of the https://github.com/trnl/clirr-gradle-plugin[{project-name}] authored by
+https://github.com/trnl[Uladzimir Mihura] with Copyright `(c) 2008 - 2013 10gen, Inc. <http://10gen.com>`.
+
+== Usage
+
+Apply the `org.kordamp.gradle.clirr` plugin to your Gradle plugin project.
+
+[source,groovy]
+[subs="attributes"]
+.Gradle 1.x and 2.0
+----
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'org.kordamp.gradle:{project-name}:{version}'
+    }
+}
+
+apply plugin: 'org.kordamp.gradle.clirr'
+----
+
+[source,groovy]
+[subs="attributes"]
+.Gradle 2.1 and higher
+----
+plugins {
+    id 'org.kordamp.gradle.clirr' version '{version}'
+}
+----
+
+== Tasks
+
+The `org.kordamp.gradle.clirr` plugin pre-defines the following tasks out-of-the-box:
+
+[cols="4*",options="header"]
+|===
+
+| Task Name | Depends On | Type | Description
+
+| clirr
+| -
+| org.kordamp.gradle.clirr.ClirrTask
+| Calculates the binary compatibility of the current codebase against a previous release
+
+|===
+
+It's likely that the {project-name} plugin is applied to multiple subprojects. Use the following task definition in order
+to generate an aggregate clirr report
+
+[source,groovy]
+.build.gradle
+----
+task clirrRootReport(type: org.kordamp.gradle.clirr.ClirrReportTask) {
+    dependsOn = subprojects.tasks.clirr
+    reports = files(subprojects.tasks.clirr.xmlReport)
+}
+----
+
+== Task Properties
+
+The `clirr`  task relies on the following properties specified in the `clirr` extension block
+
+[cols="4*",options="header"]
+|===
+
+| Property | Type | Default | Description
+
+| baseline
+| Object
+|
+| Defines the previous release. Use standard dependency notation, e.g, "com.acme:foo:1.2.3"
+
+| reportsDir
+| File
+| build/reports/clirr
+| Directory where reports will be written to
+
+| excludeFilter
+| File
+|
+| A YAML file containing exclusions
+
+| failOnErrors
+| boolean
+| true
+| Abort the build if a compatibility issue with severity "error" is found
+
+| failOnException
+| boolean
+| false
+| Abort the build if Clirr triggers an Exception during its checks
+
+|===
+
+The excludeFilter YAML file can define the following parameters
+
+[horizontal]
+differenceTypes:: A list of severity ids, e.g, [6000, 7011]
+packages:: A list of package names.
+classes:: A list of fully qualified classname.
+members:: A map of classname/memberName.
+
+Additionally, the `org.kordamp.gradle.clirr.ClirrReportTask` accepts the following properties
+
+[cols="4*",options="header"]
+|===
+
+| Property | Type | Default | Description
+
+| reportsDir
+| File
+| build/reports/clirr
+| Directory where reports will be written to
+
+| filter
+| Closure
+|
+| Excludes a compatibility issue if there's a matching criteria.
+
+|===
+
+The closure must take a single argument, which exposes the following properties
+
+  * severity; java.lang.String; info, warning, error.
+  * identifier; java.lang.String; severity id number.
+  * classname; java.lang.String; fully qualified classname.
+  * message; java.lang.String; formatted severity message.
+
+=== Example
+
+The following example, taken from the Griffon build, calculates the clirr report of every submodule
+
+[source,groovy]
+.build.gradle
+----
+clirr {
+    failOnErrors = false
+    baseline = ['org.codehaus.griffon', subproj.name, '2.0.0'].join(':')
+}
+----
+
+== Error Codes
+
+Binary reports rely on a list of codes that determine the severity of a compatibility issue. The full list of codes
+and an explanation for each one can be found at http://clirr.sourceforge.net/clirr-core/exegesis.html
