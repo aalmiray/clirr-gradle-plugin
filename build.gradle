@@ -22,8 +22,8 @@ buildscript {
     dependencies {
         classpath 'nu.studer:gradle-plugindev-plugin:1.0.3'
         classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'
-        classpath 'com.github.ben-manes:gradle-versions-plugin:0.5'
-        classpath 'com.github.jengelman.gradle.plugins:shadow:1.1.2'
+        classpath 'com.github.ben-manes:gradle-versions-plugin:0.8'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.1'
     }
 }
 
@@ -46,7 +46,7 @@ configurations {
 dependencies {
     compile gradleApi()
     uberjar ':clirr-core-uber:0.6.0'
-    compile 'org.yaml:snakeyaml:1.14'
+    compile 'org.yaml:snakeyaml:1.15'
 }
 
 sourceSets {
