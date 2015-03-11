@@ -55,6 +55,16 @@ sourceSets {
     }
 }
 
+tasks.withType(JavaCompile) {
+    sourceCompatibility = projectSourceCompatibility
+    targetCompatibility = projectTargetCompatibility
+}
+
+tasks.withType(GroovyCompile) {
+    sourceCompatibility = projectSourceCompatibility
+    targetCompatibility = projectTargetCompatibility
+}
+
 javadoc {
     classpath += [configurations.uberjar]
 }
