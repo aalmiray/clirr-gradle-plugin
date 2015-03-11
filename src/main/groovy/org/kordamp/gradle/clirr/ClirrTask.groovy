@@ -23,6 +23,7 @@ import net.sf.clirr.core.spi.JavaType
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.FileCollection
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
@@ -58,6 +59,11 @@ class ClirrTask extends DefaultTask {
     @TaskAction
     void run() {
         project.clirr.reportsDir.mkdirs()
+
+        if (!project.extensions.clirr.enabled) {
+            logger.info("clirr was disabled for project ${project.name}")
+            return
+        }
 
         Checker checker = new Checker()
         JavaType[] origClasses = createClassSet(project.extensions.clirr.baseFiles as File[])

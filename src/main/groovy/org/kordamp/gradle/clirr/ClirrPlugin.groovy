@@ -20,19 +20,21 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.invocation.Gradle
-import org.gradle.api.plugins.JavaBasePlugin
+import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.ReportingBasePlugin
 import org.gradle.api.reporting.ReportingExtension
 
 class ClirrPlugin implements Plugin<Project> {
+    private static final String CLIRR = 'clirr'
+
     private ClirrPluginExtension extension
 
     @Override
     void apply(Project project) {
         project.plugins.apply(ReportingBasePlugin)
-        project.plugins.apply(JavaBasePlugin)
-        createExtension(project)
-        addClirrTask(project)
+        project.plugins.apply(JavaPlugin)
+        ClirrPluginExtension extension = createExtension(project)
+        addClirrTask(project, extension)
         registerBuildListener(project, extension)
     }
 
@@ -41,6 +43,11 @@ class ClirrPlugin implements Plugin<Project> {
         project.gradle.addBuildListener(new BuildAdapter() {
             @Override
             void projectsEvaluated(Gradle gradle) {
+                if (!extension.enabled) {
+                    // do not evaluate baseline if disabled
+                    return
+                }
+
                 // temporary change the group of the current project  otherwise
                 // the latest version will always override the baseline
                 String projectGroup = project.group
@@ -59,15 +66,17 @@ class ClirrPlugin implements Plugin<Project> {
         })
     }
 
-    void createExtension(Project project) {
-        extension = project.extensions.create('clirr', ClirrPluginExtension)
-        extension.reportsDir = project.extensions.getByType(ReportingExtension).file('clirr')
+    ClirrPluginExtension createExtension(Project project) {
+        extension = project.extensions.create(CLIRR, ClirrPluginExtension)
+        extension.reportsDir = project.extensions.getByType(ReportingExtension).file(CLIRR)
+        extension
     }
 
-    void addClirrTask(Project project) {
-        ClirrTask task = project.tasks.create('clirr', ClirrTask)
-
-        task.with {
+    void addClirrTask(Project project, ClirrPluginExtension extension) {
+        ClirrTask task = project.task(CLIRR,
+            type: ClirrTask,
+            group: 'Verification',
+            description: 'Determines the binary compatibility of the current codebase against a previous release') {
             newFiles = project.tasks['jar'].outputs.files
             newClasspath = project.configurations['compile']
         }

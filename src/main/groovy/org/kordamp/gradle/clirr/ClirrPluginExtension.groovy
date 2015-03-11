@@ -18,8 +18,9 @@ package org.kordamp.gradle.clirr
 class ClirrPluginExtension {
     File reportsDir
     Object baseline
-    Set<File> baseFiles
+    Set<File> baseFiles = []
     File excludeFilter
     boolean failOnErrors = true
     boolean failOnException
+    boolean enabled = true
 }
