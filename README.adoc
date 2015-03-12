@@ -67,7 +67,7 @@ to generate an aggregate clirr report
 ----
 task clirrRootReport(type: org.kordamp.gradle.clirr.ClirrReportTask) {
     dependsOn = subprojects.tasks.clirr
-    reports = files(subprojects.tasks.clirr.xmlReport)
+    reports = files((subprojects.findAll { it.clirr.enabled == true }).tasks.clirr.xmlReport)
 }
 ----
 
