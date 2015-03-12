@@ -22,6 +22,7 @@ buildscript {
     dependencies {
         classpath 'nu.studer:gradle-plugindev-plugin:1.0.3'
         classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'
+        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.3.1'
         classpath 'com.github.ben-manes:gradle-versions-plugin:0.8'
         classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.1'
     }
@@ -30,8 +31,10 @@ buildscript {
 apply plugin: 'idea'
 apply plugin: 'groovy'
 apply plugin: 'nu.studer.plugindev'
+apply plugin: 'com.github.kt3k.coveralls'
 apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'com.github.ben-manes.versions'
+apply from: 'gradle/code-coverage.gradle'
 apply from: 'gradle/code-quality.gradle'
 
 repositories {

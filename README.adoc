@@ -1,7 +1,7 @@
 Clirr Gradle Plugin
 ===================
 :author: Andres Almiray
-:version: 0.1.0
+:version: 0.2.0
 :url_clirr: http://clirr.sourceforge.net
 :project-name: clirr-gradle-plugin
 
@@ -73,17 +73,27 @@ task clirrRootReport(type: org.kordamp.gradle.clirr.ClirrReportTask) {
 
 == Task Properties
 
-The `clirr`  task relies on the following properties specified in the `clirr` extension block
+The `clirr` task relies on the following properties specified in the `clirr` extension block
 
 [cols="4*",options="header"]
 |===
 
 | Property | Type | Default | Description
 
+| enabled
+| boolean
+| true
+| Controls whether the clirr task should be enabled or disabled
+
 | baseline
 | Object
 |
 | Defines the previous release. Use standard dependency notation, e.g, "com.acme:foo:1.2.3"
+
+| semver
+| boolean
+| true
+| Evaluates the project's version using semver rules
 
 | reportsDir
 | File
@@ -140,6 +150,40 @@ The closure must take a single argument, which exposes the following properties
   * identifier; java.lang.String; severity id number.
   * classname; java.lang.String; fully qualified classname.
   * message; java.lang.String; formatted severity message.
+
+You may skip defining a value for `baseline` and let the `clirr` figure out the the previous version according to the
+following rules
+
+ . remove trailing tag if it exists
+ . if the `semver` property is set to `true` (default)
+ .. if the `minor` version is `0` then `revision` is checked
+ ... if `revision` is `0` clirr is disabled.
+ ... if `revision` is > `0` decrement `revision` by `1`.
+ .. if the `minor` version is > `0` then `revision` is checked
+ ... if `revision` is `0` decrement `minor` by `1`.
+ ... if `revision` is > `0` decrement `revision` by `1`.
+
+ . if the `semver` property is set to `false`
+ . if `revision` is `0` then clirr is disabled.
+ . if `revision` is > `0` then `revision` is decremented by `1`.
+
+These rules produce the following outcomes given these inputs
+
+.semver = true
+----
+2.0.0 => disabled
+2.0.4 => 2.0.3
+2.1.0 => 2.0.0
+2.1.3 => 2.1.2
+----
+
+.semver = false
+----
+2.0.0 => disabled
+2.0.4 => 2.0.3
+2.1.0 => disabled
+2.1.3 => 2.1.2
+----
 
 === Example
 

@@ -34,12 +34,11 @@ class ClirrPlugin implements Plugin<Project> {
         project.plugins.apply(ReportingBasePlugin)
         project.plugins.apply(JavaPlugin)
         ClirrPluginExtension extension = createExtension(project)
-        addClirrTask(project, extension)
+        addClirrTask(project)
         registerBuildListener(project, extension)
     }
 
-    private static void registerBuildListener(
-        final Project project, final ClirrPluginExtension extension) {
+    private static void registerBuildListener(Project project, ClirrPluginExtension extension) {
         project.gradle.addBuildListener(new BuildAdapter() {
             @Override
             void projectsEvaluated(Gradle gradle) {
@@ -48,13 +47,38 @@ class ClirrPlugin implements Plugin<Project> {
                     return
                 }
 
+                def baseline = project.clirr.baseline
+                if (!baseline) {
+                    // attempt resolving baseline using current version
+                    Version current = Version.of(String.valueOf(project.version))
+                    if (current == Version.ZERO) {
+                        // can't run clirr
+                        project.logger.info("{}: version '{}' could not be parsed as semver", project.name, project.version)
+                        project.logger.info('{}: please set clirr.baseline explicitly or disable clirr', project.name)
+                        extension.enabled = false
+                        return
+                    }
+
+                    Versions versions = Versions.of(current, extension.semver)
+                    if (versions.previous == Version.ZERO) {
+                        project.logger.info("{}: could not determine previous version for '{}' [semver compatibility={}]", project.name, current, extension.semver)
+                        project.logger.info('{}: please set clirr.baseline explicitly or disable clirr', project.name)
+                        extension.enabled = false
+                        return
+                    }
+
+                    baseline = [project.group ?: '', project.name, versions.previous].join(':')
+                }
+
+                project.logger.info('{}: baseline has been set to {}', project.name, baseline)
+
                 // temporary change the group of the current project  otherwise
                 // the latest version will always override the baseline
                 String projectGroup = project.group
                 try {
                     project.group = projectGroup + '.clirr'
                     Configuration detached = project.configurations.detachedConfiguration(
-                        project.dependencies.create(project.clirr.baseline)
+                        project.dependencies.create(baseline)
                     )
                     detached.transitive = true
                     detached.resolve()
@@ -72,15 +96,13 @@ class ClirrPlugin implements Plugin<Project> {
         extension
     }
 
-    void addClirrTask(Project project, ClirrPluginExtension extension) {
-        ClirrTask task = project.task(CLIRR,
+    void addClirrTask(Project project) {
+        project.tasks.getByName('check').dependsOn(project.task(CLIRR,
             type: ClirrTask,
             group: 'Verification',
             description: 'Determines the binary compatibility of the current codebase against a previous release') {
             newFiles = project.tasks['jar'].outputs.files
             newClasspath = project.configurations['compile']
-        }
-
-        project.tasks.getByName('check').dependsOn(task)
+        })
     }
 }

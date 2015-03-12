@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2015 the original author or authors.
+ * Copyright 2013-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,14 @@
  */
 
 apply plugin: 'jacoco'
-apply plugin: 'com.github.kt3k.coveralls'
 
 jacoco {
-    toolVersion = '0.7.2.201409121644'
+    toolVersion = '0.7.3.201502191951'
 }
 
 jacocoTestReport {
-    group = "Reporting"
-    description = "Generate Jacoco coverage reports after running tests."
+    group = 'Reporting'
+    description = 'Generate Jacoco coverage reports after running tests.'
     additionalSourceDirs = project.files(sourceSets.main.allSource.srcDirs)
     sourceDirectories = project.files(sourceSets.main.allSource.srcDirs)
     classDirectories =  project.files(sourceSets.main.output)

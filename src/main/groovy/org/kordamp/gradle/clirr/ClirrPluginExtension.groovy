@@ -23,4 +23,5 @@ class ClirrPluginExtension {
     boolean failOnErrors = true
     boolean failOnException
     boolean enabled = true
+    boolean semver = true
 }
