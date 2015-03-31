@@ -29,7 +29,7 @@ class Version {
     final int revision
     final String tag
 
-    private static final Pattern SEMVER = ~/([1-9][0-9]*)\.([0-9]|[1-9][0-9]*)\.([0-9]|[1-9][0-9]*)(\-.+)?/
+    private static final Pattern SEMVER = ~/([0-9]|[1-9][0-9]*)\.([0-9]|[1-9][0-9]*)\.([0-9]|[1-9][0-9]*)(\-.+)?/
 
     static Version of(String str) {
         Matcher matcher = SEMVER.matcher(str)
