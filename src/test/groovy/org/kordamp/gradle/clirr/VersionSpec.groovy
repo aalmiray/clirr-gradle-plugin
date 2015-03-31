@@ -32,6 +32,9 @@ class VersionSpec extends Specification {
 
         where:
         literal          | major | minor | revision | tag
+        '0.2.3'          | 0     | 2     | 3        | ''
+        '0.2.3-TAG'      | 0     | 2     | 3        | 'TAG'
+        '0.2.3-SNAPSHOT' | 0     | 2     | 3        | 'SNAPSHOT'
         '1.2.3'          | 1     | 2     | 3        | ''
         '1.2.3-TAG'      | 1     | 2     | 3        | 'TAG'
         '1.2.3-SNAPSHOT' | 1     | 2     | 3        | 'SNAPSHOT'
@@ -45,6 +48,6 @@ class VersionSpec extends Specification {
         version == Version.ZERO
 
         where:
-        literal << ['1', '1.2.3.4', '1.2.TAG', '1.2.3.TAG', 'garbage']
+        literal << ['1', '1.2.3.4', '1.2.TAG', '1.2.3.TAG', 'garbage', '00.1.2', '01.2.3']
     }
 }

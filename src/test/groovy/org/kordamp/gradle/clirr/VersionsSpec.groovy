@@ -47,5 +47,9 @@ class VersionsSpec extends Specification {
         Version.of('2.1.0-TAG') | true   || Version.of('2.0.0')
         Version.of('2.1.3')     | true   || Version.of('2.1.2')
         Version.of('2.1.3-TAG') | true   || Version.of('2.1.2')
+        Version.of('0.9.5')     | true   || Version.of('0.9.4')
+        Version.of('0.9.5-TAG') | true   || Version.of('0.9.4')
+        Version.of('0.9.0')     | true   || Version.of('0.8.0')
+        Version.of('0.9.0-TAG') | true   || Version.of('0.8.0')
     }
 }
