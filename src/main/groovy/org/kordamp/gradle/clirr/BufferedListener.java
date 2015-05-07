@@ -61,7 +61,7 @@ public class BufferedListener extends DiffListenerAdapter {
         }
 
         // Check for .* suffix on each package name
-        for (final String ignoredPackage : ignoredPackages) {
+        for (String ignoredPackage : ignoredPackages) {
             if (ignoredPackage.endsWith(".*")) {
                 // Ignore any sub-package of the prefix
                 if (packageName.startsWith(ignoredPackage.substring(0, ignoredPackage.length() - 1))) {
