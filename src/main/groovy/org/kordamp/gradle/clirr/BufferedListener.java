@@ -60,6 +60,20 @@ public class BufferedListener extends DiffListenerAdapter {
             return;
         }
 
+        // Check for .* suffix on each package name
+        for (final String ignoredPackage : ignoredPackages) {
+            if (ignoredPackage.endsWith(".*")) {
+                // Ignore any sub-package of the prefix
+                if (packageName.startsWith(ignoredPackage.substring(0, ignoredPackage.length() - 1))) {
+                    return;
+                }
+                // Ignore the prefix itself
+                if (packageName.equals(ignoredPackage.substring(0, ignoredPackage.length() - 2))) {
+                    return;
+                }
+            }
+        }
+
         final String memberName = extractMemberName(difference);
 
         if (memberName != null
