@@ -1,7 +1,7 @@
 Clirr Gradle Plugin
 ===================
 :author: Andres Almiray
-:version: 0.2.2
+:version: 0.2.4
 :url_clirr: http://clirr.sourceforge.net
 :project-name: clirr-gradle-plugin
 
