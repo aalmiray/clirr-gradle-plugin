@@ -3,8 +3,7 @@ language: groovy
 script: ./gradlew clean build jacocoTestReport
 
 jdk:
-  - oraclejdk7
-  - openjdk7
+  - oraclejdk8
 
 env: TERM=dumb
 
