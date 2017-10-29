@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2015 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,23 @@
  * limitations under the License.
  */
 
-buildscript {
-    repositories {
-        jcenter()
-    }
-
-    dependencies {
-        classpath 'nu.studer:gradle-plugindev-plugin:1.0.3'
-        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'
-        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.4.0'
-        classpath 'com.github.ben-manes:gradle-versions-plugin:0.11.3'
-        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.1'
-    }
+plugins {
+    id 'groovy'
+    id 'idea'
+    id 'maven-publish'
+    id 'java-gradle-plugin'
+    id 'com.jfrog.bintray'               version '1.7.3'
+    id 'net.nemerosa.versioning'         version '2.6.1'
+    id 'com.github.ben-manes.versions'   version '0.17.0'
+    id 'com.gradle.plugin-publish'       version '0.9.9'
+    id 'com.github.hierynomus.license'   version '0.11.0'
+    id 'com.github.kt3k.coveralls'       version '2.8.2'
+    id 'com.github.johnrengelman.shadow' version '2.0.1'
 }
 
-apply plugin: 'idea'
-apply plugin: 'groovy'
-apply plugin: 'nu.studer.plugindev'
-apply plugin: 'com.github.kt3k.coveralls'
-apply plugin: 'com.github.johnrengelman.shadow'
-apply plugin: 'com.github.ben-manes.versions'
 apply from: 'gradle/code-coverage.gradle'
 apply from: 'gradle/code-quality.gradle'
+apply from: 'gradle/publishing.gradle'
 
 repositories {
     jcenter()
@@ -49,19 +44,20 @@ configurations {
 dependencies {
     compile gradleApi()
     uberjar ':clirr-core-uber:0.6.1'
-    compile 'org.yaml:snakeyaml:1.15'
+    compile 'org.yaml:snakeyaml:1.19'
 
-    testCompile('org.spockframework:spock-core:1.0-groovy-2.3') {
+    testCompile 'junit:junit:4.12'
+    testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
         exclude group: 'org.codehaus.groovy', module: 'groovy-all'
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
     }
-    testCompile 'cglib:cglib-nodep:3.1'
+    testCompile 'cglib:cglib-nodep:3.2.5'
     testCompile ':clirr-core-uber:0.6.1'
 }
 
 sourceSets {
     main {
-        compileClasspath += [configurations.uberjar]
+        compileClasspath += configurations.uberjar
     }
 }
 
@@ -76,44 +72,47 @@ tasks.withType(GroovyCompile) {
 }
 
 javadoc {
-    classpath += [configurations.uberjar]
+    classpath += configurations.uberjar
+    excludes = ['**/*.html', 'META-INF/**']
+
+    options.use         = true
+    options.splitIndex  = true
+    options.encoding    = 'UTF-8'
+    options.author      = true
+    options.version     = true
+    options.windowTitle = "$project.name $project.version API"
+    options.docTitle    = "$project.name $project.version API"
+    options.links       = ['http://docs.oracle.com/javase/7/docs/api/']
 }
+
+task sourcesJar(type: Jar) {
+    group 'Build'
+    description 'An archive of the source code'
+    classifier 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar) {
+    group 'Build'
+    description 'An archive of the javadoc'
+    classifier 'javadoc'
+    from javadoc.destinationDir
+}
+
+jar.finalizedBy sourcesJar
+jar.finalizedBy javadocJar
+
+artifacts {
+    sourcesJar
+    javadocJar
+}
+
+task publishRelease(dependsOn: [bintrayUpload, publishPlugins]) {}
 
 idea {
     module {
         scopes.PROVIDED.plus += [configurations.uberjar]
     }
-}
-
-plugindev {
-    pluginId = 'org.kordamp.gradle.clirr'
-    pluginImplementationClass 'org.kordamp.gradle.clirr.ClirrPlugin'
-    pluginDescription 'Clirr is a tool that checks Java libraries for binary and source compatibility with older releases.'
-    pluginLicenses 'Apache-2.0'
-    pluginTags 'gradle', 'plugin', 'clirr'
-    authorId 'aalmiray'
-    authorName 'Andres Almiray'
-    authorEmail 'aalmiray@yahoo.com'
-    projectUrl 'https://github.com/aalmiray/clirr-gradle-plugin'
-    projectInceptionYear '2014'
-    done()
-}
-
-if (!project.hasProperty('bintrayUsername')) ext.bintrayUsername = ''
-if (!project.hasProperty('bintrayApiKey')) ext.bintrayApiKey = ''
-
-bintray {
-    user = project.bintrayUsername
-    key = project.bintrayApiKey
-    pkg.repo = 'kordamp'
-}
-
-import java.text.SimpleDateFormat
-
-Date buildTimeAndDate = new Date()
-ext {
-    buildDate = new SimpleDateFormat('yyyy-MM-dd').format(buildTimeAndDate)
-    buildTime = new SimpleDateFormat('HH:mm:ss.SSSZ').format(buildTimeAndDate)
 }
 
 shadowJar {
@@ -134,5 +133,6 @@ shadowJar {
         )
     }
 }
+
 jar.finalizedBy shadowJar
 

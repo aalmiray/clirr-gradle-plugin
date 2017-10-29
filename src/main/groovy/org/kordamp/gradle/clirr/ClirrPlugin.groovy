@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2015 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.invocation.Gradle
-import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.ReportingBasePlugin
 import org.gradle.api.reporting.ReportingExtension
 
@@ -32,7 +31,6 @@ class ClirrPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
         project.plugins.apply(ReportingBasePlugin)
-        project.plugins.apply(JavaPlugin)
         ClirrPluginExtension extension = createExtension(project)
         addClirrTask(project)
         registerBuildListener(project, extension)
@@ -97,11 +95,19 @@ class ClirrPlugin implements Plugin<Project> {
     }
 
     void addClirrTask(Project project) {
+        def newfiles = null
+
+        if (project.plugins.hasPlugin('com.android.library')) {
+            newfiles = project.tasks['assemble'].outputs.files
+        } else {
+            newfiles = project.tasks['jar'].outputs.files
+        }
+
         project.tasks.getByName('check').dependsOn(project.task(CLIRR,
             type: ClirrTask,
             group: 'Verification',
             description: 'Determines the binary compatibility of the current codebase against a previous release') {
-            newFiles = project.tasks['jar'].outputs.files
+            newFiles = newfiles
             newClasspath = project.configurations['compile']
         })
     }
